@@ -3,5 +3,5 @@
   <string name="dialog_permission_camera">"Ilovaga kameradan foydalanishiga ruxsat berish uchun tizim sozlamalarida ruxsat bering."</string>
   <string name="dialog_permission_generic">"Iltimos, tizim sozlamalarida ruxsat bering."</string>
   <string name="dialog_permission_microphone">"Ilovaga mikrofondan foydalanishiga ruxsat berish uchun tizim sozlamalarida ruxsat bering."</string>
-  <string name="dialog_permission_notification">"Ilova bildirishnomalarni ko\'rsatishi uchun tizim sozlamalarida ruxsat bering."</string>
+  <string name="dialog_permission_notification">"Ilova bildirishnomalarni koʻrsatishi uchun tizim sozlamalarida ruxsat bering."</string>
 </resources>

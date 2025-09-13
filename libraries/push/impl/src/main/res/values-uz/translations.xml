@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-  <string name="notification_channel_call">"Qo\'ng\'iroq"</string>
+  <string name="notification_channel_call">"Qoʻngʻiroq"</string>
   <string name="notification_channel_listening_for_events">"Voqealarni tinglash"</string>
   <string name="notification_channel_noisy">"Shovqinli bildirishnomalar"</string>
   <string name="notification_channel_ringing_calls">"Jiringlayotgan qoʻngʻiroqlar"</string>
@@ -16,7 +16,7 @@
   <string name="notification_fallback_content">"Sizda yangi xabarlar bor."</string>
   <string name="notification_incoming_call">"📹 Kiruvchi qoʻngʻiroq"</string>
   <string name="notification_inline_reply_failed">"** Yuborilmadi - iltimos, xonani oching"</string>
-  <string name="notification_invitation_action_join">"Qo\'shilish"</string>
+  <string name="notification_invitation_action_join">"Qoʻshilish"</string>
   <string name="notification_invitation_action_reject">"Rad etish"</string>
   <plurals name="notification_invitations">
     <item quantity="one">"%dtaklifnoma"</item>
@@ -37,12 +37,12 @@
   <string name="notification_room_invite_body_with_sender">"%1$s sizni xonaga kirishga taklif qildi"</string>
   <string name="notification_sender_me">"Men"</string>
   <string name="notification_sender_mention_reply">"%1$s eslatib o‘tdi yoki javob qaytardi"</string>
-  <string name="notification_test_push_notification_content">"Siz bildirishnomani ko\'ryapsiz! Meni bosing!"</string>
+  <string name="notification_test_push_notification_content">"Siz bildirishnomani koʻryapsiz! Meni bosing!"</string>
   <string name="notification_ticker_text_dm">"%1$s:%2$s"</string>
   <string name="notification_ticker_text_group">"%1$s:%2$s%3$s"</string>
   <plurals name="notification_unread_notified_messages">
-    <item quantity="one">"%do\'qilmagan xabarnoma"</item>
-    <item quantity="other">"%do\'qilmagan xabarlar"</item>
+    <item quantity="one">"%doʻqilmagan xabarnoma"</item>
+    <item quantity="other">"%doʻqilmagan xabarlar"</item>
   </plurals>
   <string name="notification_unread_notified_messages_and_invitation">"%1$sva%2$s"</string>
   <string name="notification_unread_notified_messages_in_room">"%1$sichida%2$s"</string>
@@ -53,7 +53,7 @@
   </plurals>
   <string name="push_distributor_background_sync_android">"Orqa Fon sinxronizatsiyasi"</string>
   <string name="push_distributor_firebase_android">"Google xizmatlari"</string>
-  <string name="push_no_valid_google_play_services_apk_android">"Yaroqli Google Play xizmatlari topilmadi. Bildirishnomalar to\'g\'ri ishlamasligi mumkin."</string>
+  <string name="push_no_valid_google_play_services_apk_android">"Yaroqli Google Play xizmatlari topilmadi. Bildirishnomalar toʻgʻri ishlamasligi mumkin."</string>
   <string name="troubleshoot_notifications_test_current_push_provider_description">"Joriy provayder nomini oling."</string>
   <string name="troubleshoot_notifications_test_current_push_provider_failure">"Hech qanday push-provayder tanlanmagan."</string>
   <string name="troubleshoot_notifications_test_current_push_provider_success">"Joriy push provider: %1$s."</string>

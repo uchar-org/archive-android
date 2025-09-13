@@ -4,7 +4,7 @@
   <string name="screen_app_lock_biometric_unlock">"biometrik qulf ochish"</string>
   <string name="screen_app_lock_biometric_unlock_title_android">"Biometrik bilan qulfni oching"</string>
   <string name="screen_app_lock_forgot_pin">"PIN kodni unutdingizmi?"</string>
-  <string name="screen_app_lock_settings_change_pin">"PIN kodni o\'zgartirish"</string>
+  <string name="screen_app_lock_settings_change_pin">"PIN kodni oʻzgartirish"</string>
   <string name="screen_app_lock_settings_enable_biometric_unlock">"Biometrik qulfni ochishga ruxsat bering"</string>
   <string name="screen_app_lock_settings_remove_pin">"PIN-kodni olib tashlang"</string>
   <string name="screen_app_lock_settings_remove_pin_alert_message">"Haqiqatan ham PIN kodni olib tashlamoqchimisiz?"</string>

@@ -24,7 +24,7 @@
   <string name="screen_session_verification_positive_button_initial">"Men tayyorman"</string>
   <string name="screen_session_verification_positive_button_verifying_ongoing">"Mos kelishi kutilmoqda"</string>
   <string name="screen_session_verification_ready_subtitle">"Emojilarning noyob toʻplamini solishtiring."</string>
-  <string name="screen_session_verification_request_accepted_subtitle">"Noyob emojilarni solishtiring, ular bir xil tartibda paydo bo\'lishiga ishonch hosil qiling."</string>
+  <string name="screen_session_verification_request_accepted_subtitle">"Noyob emojilarni solishtiring, ular bir xil tartibda paydo bo‘lishiga ishonch hosil qiling."</string>
   <string name="screen_session_verification_request_details_timestamp">"Tizimga kirildi"</string>
   <string name="screen_session_verification_request_failure_subtitle">"So‘rov vaqti tugab qoldi, so‘rov rad etildi yoki tekshiruv mos kelmadi."</string>
   <string name="screen_session_verification_request_failure_title">"Tasdiqlanmadi"</string>

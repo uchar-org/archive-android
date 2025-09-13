@@ -20,8 +20,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.Inject
 import im.vector.app.features.analytics.plan.JoinedRoom
 import io.element.android.features.invite.api.SeenInvitesStore
 import io.element.android.features.invite.api.acceptdecline.AcceptDeclineInviteEvents
@@ -34,7 +34,6 @@ import io.element.android.features.roomdirectory.api.RoomDescription
 import io.element.android.libraries.architecture.AsyncAction
 import io.element.android.libraries.architecture.Presenter
 import io.element.android.libraries.architecture.runUpdatingState
-import io.element.android.libraries.core.coroutine.mapState
 import io.element.android.libraries.core.meta.BuildMeta
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.core.RoomId
@@ -50,11 +49,13 @@ import io.element.android.libraries.matrix.api.room.join.JoinRoom
 import io.element.android.libraries.matrix.api.room.join.JoinRule
 import io.element.android.libraries.matrix.api.room.preview.RoomPreviewInfo
 import io.element.android.libraries.matrix.ui.model.toInviteSender
+import io.element.android.libraries.matrix.ui.safety.rememberHideInvitesAvatar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.util.Optional
 
-class JoinRoomPresenter @AssistedInject constructor(
+@Inject
+class JoinRoomPresenter(
     @Assisted private val roomId: RoomId,
     @Assisted private val roomIdOrAlias: RoomIdOrAlias,
     @Assisted private val roomDescription: Optional<RoomDescription>,
@@ -92,12 +93,7 @@ class JoinRoomPresenter @AssistedInject constructor(
         val forgetRoomAction: MutableState<AsyncAction<Unit>> = remember { mutableStateOf(AsyncAction.Uninitialized) }
         var knockMessage by rememberSaveable { mutableStateOf("") }
         var isDismissingContent by remember { mutableStateOf(false) }
-        val hideInviteAvatars by remember {
-            matrixClient
-                .mediaPreviewService()
-                .mediaPreviewConfigFlow
-                .mapState { config -> config.hideInviteAvatar }
-        }.collectAsState()
+        val hideInviteAvatars by matrixClient.rememberHideInvitesAvatar()
         val canReportRoom by produceState(false) { value = matrixClient.canReportRoom() }
 
         val contentState by produceState<ContentState>(

@@ -36,27 +36,32 @@ import com.bumble.appyx.navmodel.backstack.operation.pop
 import com.bumble.appyx.navmodel.backstack.operation.push
 import com.bumble.appyx.navmodel.backstack.operation.replace
 import com.bumble.appyx.navmodel.backstack.operation.singleTop
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.Inject
 import im.vector.app.features.analytics.plan.JoinedRoom
-import io.element.android.anvilannotations.ContributesNode
+import io.element.android.annotations.ContributesNode
 import io.element.android.appnav.loggedin.LoggedInNode
 import io.element.android.appnav.loggedin.MediaPreviewConfigMigration
 import io.element.android.appnav.loggedin.SendQueues
 import io.element.android.appnav.room.RoomFlowNode
 import io.element.android.appnav.room.RoomNavigationTarget
 import io.element.android.appnav.room.joined.JoinedRoomLoadedFlowNode
-import io.element.android.features.createroom.api.CreateRoomEntryPoint
+import io.element.android.features.enterprise.api.SessionEnterpriseService
 import io.element.android.features.ftue.api.FtueEntryPoint
 import io.element.android.features.ftue.api.state.FtueService
 import io.element.android.features.ftue.api.state.FtueState
 import io.element.android.features.home.api.HomeEntryPoint
 import io.element.android.features.logout.api.LogoutEntryPoint
+import io.element.android.features.networkmonitor.api.NetworkMonitor
+import io.element.android.features.networkmonitor.api.NetworkStatus
 import io.element.android.features.preferences.api.PreferencesEntryPoint
 import io.element.android.features.roomdirectory.api.RoomDescription
 import io.element.android.features.roomdirectory.api.RoomDirectoryEntryPoint
 import io.element.android.features.securebackup.api.SecureBackupEntryPoint
 import io.element.android.features.share.api.ShareEntryPoint
+import io.element.android.features.space.api.SpaceEntryPoint
+import io.element.android.features.startchat.api.StartChatEntryPoint
 import io.element.android.features.userprofile.api.UserProfileEntryPoint
 import io.element.android.features.verifysession.api.IncomingVerificationEntryPoint
 import io.element.android.libraries.architecture.BackstackView
@@ -64,7 +69,6 @@ import io.element.android.libraries.architecture.BaseFlowNode
 import io.element.android.libraries.architecture.createNode
 import io.element.android.libraries.architecture.waitForNavTargetAttached
 import io.element.android.libraries.designsystem.utils.snackbar.SnackbarDispatcher
-import io.element.android.libraries.di.AppScope
 import io.element.android.libraries.di.SessionScope
 import io.element.android.libraries.di.annotations.SessionCoroutineScope
 import io.element.android.libraries.matrix.api.MatrixClient
@@ -78,6 +82,7 @@ import io.element.android.libraries.matrix.api.core.toRoomIdOrAlias
 import io.element.android.libraries.matrix.api.permalink.PermalinkData
 import io.element.android.libraries.matrix.api.verification.SessionVerificationServiceListener
 import io.element.android.libraries.matrix.api.verification.VerificationRequest
+import io.element.android.libraries.push.api.notifications.conversations.NotificationConversationService
 import io.element.android.services.appnavstate.api.AppNavigationStateService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
@@ -91,26 +96,18 @@ import java.time.Duration
 import java.time.Instant
 import java.util.Optional
 import java.util.UUID
-import kotlin.collections.List
-import kotlin.collections.any
-import kotlin.collections.emptyList
-import kotlin.collections.first
-import kotlin.collections.forEach
-import kotlin.collections.listOf
-import kotlin.collections.mapNotNull
-import kotlin.collections.plus
-import kotlin.collections.setOf
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toKotlinDuration
 
 @ContributesNode(SessionScope::class)
-class LoggedInFlowNode @AssistedInject constructor(
+@Inject
+class LoggedInFlowNode(
     @Assisted buildContext: BuildContext,
     @Assisted plugins: List<Plugin>,
     private val homeEntryPoint: HomeEntryPoint,
     private val preferencesEntryPoint: PreferencesEntryPoint,
-    private val createRoomEntryPoint: CreateRoomEntryPoint,
+    private val startChatEntryPoint: StartChatEntryPoint,
     private val appNavigationStateService: AppNavigationStateService,
     private val secureBackupEntryPoint: SecureBackupEntryPoint,
     private val userProfileEntryPoint: UserProfileEntryPoint,
@@ -125,6 +122,9 @@ class LoggedInFlowNode @AssistedInject constructor(
     private val logoutEntryPoint: LogoutEntryPoint,
     private val incomingVerificationEntryPoint: IncomingVerificationEntryPoint,
     private val mediaPreviewConfigMigration: MediaPreviewConfigMigration,
+    private val sessionEnterpriseService: SessionEnterpriseService,
+    private val networkMonitor: NetworkMonitor,
+    private val notificationConversationService: NotificationConversationService,
     snackbarDispatcher: SnackbarDispatcher,
 ) : BaseFlowNode<LoggedInFlowNode.NavTarget>(
     backstack = BackStack(
@@ -182,7 +182,9 @@ class LoggedInFlowNode @AssistedInject constructor(
 
     override fun onBuilt() {
         super.onBuilt()
-
+        lifecycleScope.launch {
+            sessionEnterpriseService.init()
+        }
         lifecycle.subscribe(
             onCreate = {
                 appNavigationStateService.onNavigateToSession(id, matrixClient.sessionId)
@@ -191,6 +193,12 @@ class LoggedInFlowNode @AssistedInject constructor(
                 loggedInFlowProcessor.observeEvents(sessionCoroutineScope)
                 matrixClient.sessionVerificationService().setListener(verificationListener)
                 mediaPreviewConfigMigration()
+
+                sessionCoroutineScope.launch {
+                    // Wait for the network to be connected before pre-fetching the max file upload size
+                    networkMonitor.connectivity.first { networkStatus -> networkStatus == NetworkStatus.Connected }
+                    matrixClient.getMaxFileUploadSize()
+                }
 
                 ftueService.state
                     .onEach { ftueState ->
@@ -201,6 +209,12 @@ class LoggedInFlowNode @AssistedInject constructor(
                         }
                     }
                     .launchIn(lifecycleScope)
+            },
+            onResume = {
+                lifecycleScope.launch {
+                    val availableRoomIds = matrixClient.getJoinedRoomIds().getOrNull() ?: return@launch
+                    notificationConversationService.onAvailableRoomsChanged(sessionId = matrixClient.sessionId, roomIds = availableRoomIds)
+                }
             },
             onDestroy = {
                 appNavigationStateService.onLeavingSpace(id)
@@ -291,7 +305,7 @@ class LoggedInFlowNode @AssistedInject constructor(
                         backstack.push(NavTarget.Settings())
                     }
 
-                    override fun onCreateRoomClick() {
+                    override fun onStartChatClick() {
                         backstack.push(NavTarget.CreateRoom)
                     }
 
@@ -321,9 +335,9 @@ class LoggedInFlowNode @AssistedInject constructor(
                     .build()
             }
             is NavTarget.Room -> {
-                val callback = object : JoinedRoomLoadedFlowNode.Callback {
-                    override fun onOpenRoom(roomId: RoomId) {
-                        backstack.push(NavTarget.Room(roomId.toRoomIdOrAlias()))
+                val joinedRoomCallback = object : JoinedRoomLoadedFlowNode.Callback {
+                    override fun onOpenRoom(roomId: RoomId, serverNames: List<String>) {
+                        backstack.push(NavTarget.Room(roomId.toRoomIdOrAlias(), serverNames))
                     }
 
                     override fun onForwardedToSingleRoom(roomId: RoomId) {
@@ -360,6 +374,11 @@ class LoggedInFlowNode @AssistedInject constructor(
                         backstack.push(NavTarget.Settings(PreferencesEntryPoint.InitialTarget.NotificationSettings))
                     }
                 }
+                val spaceCallback = object : SpaceEntryPoint.Callback {
+                    override fun onOpenRoom(roomId: RoomId) {
+                        backstack.push(NavTarget.Room(roomId.toRoomIdOrAlias()))
+                    }
+                }
                 val inputs = RoomFlowNode.Inputs(
                     roomIdOrAlias = navTarget.roomIdOrAlias,
                     roomDescription = Optional.ofNullable(navTarget.roomDescription),
@@ -367,7 +386,7 @@ class LoggedInFlowNode @AssistedInject constructor(
                     trigger = Optional.ofNullable(navTarget.trigger),
                     initialElement = navTarget.initialElement
                 )
-                createNode<RoomFlowNode>(buildContext, plugins = listOf(inputs, callback))
+                createNode<RoomFlowNode>(buildContext, plugins = listOf(inputs, joinedRoomCallback, spaceCallback))
             }
             is NavTarget.UserProfile -> {
                 val callback = object : UserProfileEntryPoint.Callback {
@@ -409,7 +428,7 @@ class LoggedInFlowNode @AssistedInject constructor(
                     .build()
             }
             NavTarget.CreateRoom -> {
-                val callback = object : CreateRoomEntryPoint.Callback {
+                val callback = object : StartChatEntryPoint.Callback {
                     override fun onOpenRoom(roomIdOrAlias: RoomIdOrAlias, serverNames: List<String>) {
                         backstack.replace(NavTarget.Room(roomIdOrAlias = roomIdOrAlias, serverNames = serverNames))
                     }
@@ -419,7 +438,7 @@ class LoggedInFlowNode @AssistedInject constructor(
                     }
                 }
 
-                createRoomEntryPoint
+                startChatEntryPoint
                     .nodeBuilder(this, buildContext)
                     .callback(callback)
                     .build()
@@ -548,13 +567,14 @@ class LoggedInFlowNode @AssistedInject constructor(
             }
         }
     }
-
-    @ContributesNode(AppScope::class)
-    class PlaceholderNode @AssistedInject constructor(
-        @Assisted buildContext: BuildContext,
-        @Assisted plugins: List<Plugin>,
-    ) : Node(buildContext, plugins = plugins)
 }
+
+@ContributesNode(AppScope::class)
+@Inject
+class PlaceholderNode(
+    @Assisted buildContext: BuildContext,
+    @Assisted plugins: List<Plugin>,
+) : Node(buildContext, plugins = plugins)
 
 @Parcelize
 private class AttachRoomOperation(

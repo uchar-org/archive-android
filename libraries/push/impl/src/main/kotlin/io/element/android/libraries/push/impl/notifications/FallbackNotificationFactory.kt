@@ -7,6 +7,7 @@
 
 package io.element.android.libraries.push.impl.notifications
 
+import dev.zacsweers.metro.Inject
 import io.element.android.libraries.matrix.api.core.EventId
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.core.SessionId
@@ -14,9 +15,9 @@ import io.element.android.libraries.push.impl.R
 import io.element.android.libraries.push.impl.notifications.model.FallbackNotifiableEvent
 import io.element.android.services.toolbox.api.strings.StringProvider
 import io.element.android.services.toolbox.api.systemclock.SystemClock
-import javax.inject.Inject
 
-class FallbackNotificationFactory @Inject constructor(
+@Inject
+class FallbackNotificationFactory(
     private val clock: SystemClock,
     private val stringProvider: StringProvider,
 ) {
@@ -24,6 +25,7 @@ class FallbackNotificationFactory @Inject constructor(
         sessionId: SessionId,
         roomId: RoomId,
         eventId: EventId,
+        cause: String?,
     ): FallbackNotifiableEvent = FallbackNotifiableEvent(
         sessionId = sessionId,
         roomId = roomId,
@@ -34,5 +36,6 @@ class FallbackNotificationFactory @Inject constructor(
         isUpdated = false,
         timestamp = clock.epochMillis(),
         description = stringProvider.getString(R.string.notification_fallback_content),
+        cause = cause,
     )
 }

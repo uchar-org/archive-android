@@ -7,13 +7,14 @@
 
 package io.element.android.libraries.push.impl.push
 
-import com.squareup.anvil.annotations.ContributesBinding
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import io.element.android.features.call.api.CallType
 import io.element.android.features.call.api.ElementCallEntryPoint
 import io.element.android.libraries.core.log.logger.LoggerTag
 import io.element.android.libraries.core.meta.BuildMeta
-import io.element.android.libraries.di.AppScope
-import io.element.android.libraries.di.SingleIn
 import io.element.android.libraries.di.annotations.AppCoroutineScope
 import io.element.android.libraries.matrix.api.auth.MatrixAuthenticationService
 import io.element.android.libraries.matrix.api.exception.NotificationResolverException
@@ -27,6 +28,7 @@ import io.element.android.libraries.push.impl.notifications.FallbackNotification
 import io.element.android.libraries.push.impl.notifications.NotificationEventRequest
 import io.element.android.libraries.push.impl.notifications.NotificationResolverQueue
 import io.element.android.libraries.push.impl.notifications.channels.NotificationChannels
+import io.element.android.libraries.push.impl.notifications.model.FallbackNotifiableEvent
 import io.element.android.libraries.push.impl.notifications.model.NotifiableEvent
 import io.element.android.libraries.push.impl.notifications.model.NotifiableRingingCallEvent
 import io.element.android.libraries.push.impl.notifications.model.ResolvedPushEvent
@@ -42,13 +44,13 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import javax.inject.Inject
 
 private val loggerTag = LoggerTag("PushHandler", LoggerTag.PushLoggerTag)
 
 @SingleIn(AppScope::class)
 @ContributesBinding(AppScope::class)
-class DefaultPushHandler @Inject constructor(
+@Inject
+class DefaultPushHandler(
     private val onNotifiableEventReceived: OnNotifiableEventReceived,
     private val onRedactedEventReceived: OnRedactedEventReceived,
     private val incrementPushDataStore: IncrementPushDataStore,
@@ -90,13 +92,23 @@ class DefaultPushHandler @Inject constructor(
                     } else {
                         result.fold(
                             onSuccess = {
-                                pushHistoryService.onSuccess(
-                                    providerInfo = request.providerInfo,
-                                    eventId = request.eventId,
-                                    roomId = request.roomId,
-                                    sessionId = request.sessionId,
-                                    comment = "Push handled successfully",
-                                )
+                                if (it is ResolvedPushEvent.Event && it.notifiableEvent is FallbackNotifiableEvent) {
+                                    pushHistoryService.onUnableToResolveEvent(
+                                        providerInfo = request.providerInfo,
+                                        eventId = request.eventId,
+                                        roomId = request.roomId,
+                                        sessionId = request.sessionId,
+                                        reason = it.notifiableEvent.cause.orEmpty(),
+                                    )
+                                } else {
+                                    pushHistoryService.onSuccess(
+                                        providerInfo = request.providerInfo,
+                                        eventId = request.eventId,
+                                        roomId = request.roomId,
+                                        sessionId = request.sessionId,
+                                        comment = "Push handled successfully",
+                                    )
+                                }
                             },
                             onFailure = { exception ->
                                 if (exception is NotificationResolverException.EventFilteredOut) {
@@ -140,7 +152,14 @@ class DefaultPushHandler @Inject constructor(
                             }
                             else -> {
                                 Timber.tag(loggerTag.value).e(exception, "Failed to resolve push event")
-                                ResolvedPushEvent.Event(fallbackNotificationFactory.create(request.sessionId, request.roomId, request.eventId))
+                                ResolvedPushEvent.Event(
+                                    fallbackNotificationFactory.create(
+                                        sessionId = request.sessionId,
+                                        roomId = request.roomId,
+                                        eventId = request.eventId,
+                                        cause = exception.message,
+                                    )
+                                )
                             }
                         }
                     }.getOrNull() ?: continue

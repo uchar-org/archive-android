@@ -1,4 +1,4 @@
-import extension.setupAnvil
+import extension.setupDependencyInjection
 
 /*
  * Copyright 2022-2024 New Vector Ltd.
@@ -21,7 +21,7 @@ android {
     }
 }
 
-setupAnvil()
+setupDependencyInjection()
 
 dependencies {
     api(projects.features.messages.api)
@@ -50,6 +50,7 @@ dependencies {
     implementation(projects.libraries.voiceplayer.api)
     implementation(projects.libraries.voicerecorder.api)
     implementation(projects.libraries.mediaplayer.api)
+    implementation(projects.libraries.push.api)
     implementation(projects.libraries.uiUtils)
     implementation(projects.libraries.testtags)
     implementation(projects.features.networkmonitor.api)
@@ -76,6 +77,7 @@ dependencies {
     testImplementation(libs.test.turbine)
     testImplementation(projects.libraries.matrix.test)
     testImplementation(projects.libraries.dateformatter.test)
+    testImplementation(projects.libraries.push.test)
     testImplementation(projects.features.location.test)
     testImplementation(projects.features.networkmonitor.test)
     testImplementation(projects.features.messages.test)

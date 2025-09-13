@@ -10,13 +10,14 @@ package io.element.android.libraries.push.impl.notifications
 import android.content.Context
 import android.net.Uri
 import androidx.core.content.FileProvider
-import com.squareup.anvil.annotations.ContributesBinding
+import dev.zacsweers.metro.AppScope
+import dev.zacsweers.metro.ContributesBinding
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.SingleIn
 import io.element.android.libraries.core.extensions.flatMap
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.core.log.logger.LoggerTag
-import io.element.android.libraries.di.AppScope
-import io.element.android.libraries.di.ApplicationContext
-import io.element.android.libraries.di.SingleIn
+import io.element.android.libraries.di.annotations.ApplicationContext
 import io.element.android.libraries.matrix.api.MatrixClient
 import io.element.android.libraries.matrix.api.MatrixClientProvider
 import io.element.android.libraries.matrix.api.core.EventId
@@ -50,7 +51,6 @@ import io.element.android.libraries.push.impl.notifications.model.ResolvedPushEv
 import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.services.toolbox.api.strings.StringProvider
 import timber.log.Timber
-import javax.inject.Inject
 
 private val loggerTag = LoggerTag("DefaultNotifiableEventResolver", LoggerTag.NotificationLoggerTag)
 
@@ -77,7 +77,8 @@ interface NotifiableEventResolver {
 
 @ContributesBinding(AppScope::class)
 @SingleIn(AppScope::class)
-class DefaultNotifiableEventResolver @Inject constructor(
+@Inject
+class DefaultNotifiableEventResolver(
     private val stringProvider: StringProvider,
     private val matrixClientProvider: MatrixClientProvider,
     private val notificationMediaRepoFactory: NotificationMediaRepo.Factory,
@@ -236,7 +237,12 @@ class DefaultNotifiableEventResolver @Inject constructor(
             }
             NotificationContent.MessageLike.RoomEncrypted -> {
                 Timber.tag(loggerTag.value).w("Notification with encrypted content -> fallback")
-                val fallbackNotifiableEvent = fallbackNotificationFactory.create(userId, roomId, eventId)
+                val fallbackNotifiableEvent = fallbackNotificationFactory.create(
+                    sessionId = userId,
+                    roomId = roomId,
+                    eventId = eventId,
+                    cause = "Unable to decrypt event content",
+                )
                 ResolvedPushEvent.Event(fallbackNotifiableEvent)
             }
             is NotificationContent.MessageLike.RoomRedaction -> {

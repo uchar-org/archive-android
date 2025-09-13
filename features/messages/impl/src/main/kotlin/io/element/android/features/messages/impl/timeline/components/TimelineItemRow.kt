@@ -37,12 +37,14 @@ import io.element.android.features.messages.impl.timeline.model.event.TimelineIt
 import io.element.android.features.messages.impl.timeline.model.event.TimelineItemVoiceContent
 import io.element.android.features.messages.impl.timeline.protection.TimelineProtectionEvent
 import io.element.android.features.messages.impl.timeline.protection.TimelineProtectionState
+import io.element.android.libraries.designsystem.modifiers.onKeyboardContextMenuAction
 import io.element.android.libraries.designsystem.modifiers.subtleColorStops
 import io.element.android.libraries.designsystem.preview.ElementPreview
 import io.element.android.libraries.designsystem.preview.PreviewsDayNight
 import io.element.android.libraries.designsystem.text.toPx
 import io.element.android.libraries.designsystem.theme.LocalBuildMeta
 import io.element.android.libraries.matrix.api.core.EventId
+import io.element.android.libraries.matrix.api.timeline.Timeline
 import io.element.android.libraries.matrix.api.user.MatrixUser
 import io.element.android.libraries.ui.strings.CommonStrings
 import io.element.android.libraries.ui.utils.time.isTalkbackActive
@@ -52,11 +54,13 @@ import kotlin.time.DurationUnit
 @Composable
 internal fun TimelineItemRow(
     timelineItem: TimelineItem,
+    timelineMode: Timeline.Mode,
     timelineRoomInfo: TimelineRoomInfo,
     renderReadReceipts: Boolean,
     isLastOutgoingMessage: Boolean,
     timelineProtectionState: TimelineProtectionState,
     focusedEventId: EventId?,
+    displayThreadSummaries: Boolean,
     onUserDataClick: (MatrixUser) -> Unit,
     onLinkClick: (Link) -> Unit,
     onLinkLongClick: (Link) -> Unit,
@@ -148,20 +152,24 @@ internal fun TimelineItemRow(
                                 // Custom clickable that applies over the whole item for accessibility
                                 .then(
                                     if (isTalkbackActive()) {
-                                        Modifier.combinedClickable(
-                                            onClick = { onContentClick(timelineItem) },
-                                            onLongClick = { onLongClick(timelineItem) },
-                                            onLongClickLabel = stringResource(CommonStrings.action_open_context_menu),
-                                        )
+                                        Modifier
+                                            .combinedClickable(
+                                                onClick = { onContentClick(timelineItem) },
+                                                onLongClick = { onLongClick(timelineItem) },
+                                                onLongClickLabel = stringResource(CommonStrings.action_open_context_menu),
+                                            )
+                                            .onKeyboardContextMenuAction { onLongClick(timelineItem) }
                                     } else {
                                         Modifier
                                     }
                                 ),
                             event = timelineItem,
+                            timelineMode = timelineMode,
                             timelineRoomInfo = timelineRoomInfo,
                             renderReadReceipts = renderReadReceipts,
                             timelineProtectionState = timelineProtectionState,
                             isLastOutgoingMessage = isLastOutgoingMessage,
+                            displayThreadSummaries = displayThreadSummaries,
                             onEventClick = { onContentClick(timelineItem) },
                             onLongClick = { onLongClick(timelineItem) },
                             onLinkClick = onLinkClick,
@@ -184,11 +192,13 @@ internal fun TimelineItemRow(
             is TimelineItem.GroupedEvents -> {
                 TimelineItemGroupedEventsRow(
                     timelineItem = timelineItem,
+                    timelineMode = timelineMode,
                     timelineRoomInfo = timelineRoomInfo,
                     timelineProtectionState = timelineProtectionState,
                     renderReadReceipts = renderReadReceipts,
                     isLastOutgoingMessage = isLastOutgoingMessage,
                     focusedEventId = focusedEventId,
+                    displayThreadSummaries = displayThreadSummaries,
                     onClick = onContentClick,
                     onLongClick = onLongClick,
                     inReplyToClick = inReplyToClick,

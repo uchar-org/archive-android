@@ -1,4 +1,4 @@
-import extension.setupAnvil
+import extension.setupDependencyInjection
 
 /*
  * Copyright 2023, 2024 New Vector Ltd.
@@ -21,7 +21,7 @@ android {
     }
 }
 
-setupAnvil()
+setupDependencyInjection()
 
 dependencies {
     implementation(projects.appconfig)
@@ -44,7 +44,7 @@ dependencies {
     api(projects.services.apperror.api)
     implementation(libs.coil.compose)
     implementation(projects.features.call.api)
-    implementation(projects.features.createroom.api)
+    implementation(projects.features.startchat.api)
     implementation(projects.features.leaveroom.api)
     implementation(projects.features.userprofile.shared)
     implementation(projects.services.analytics.compose)
@@ -55,6 +55,8 @@ dependencies {
     implementation(projects.features.verifysession.api)
     implementation(projects.features.reportroom.api)
     implementation(projects.features.roommembermoderation.api)
+    implementation(projects.features.changeroommemberroles.api)
+    implementation(projects.features.invitepeople.api)
 
     testImplementation(libs.test.junit)
     testImplementation(libs.coroutines.test)
@@ -71,7 +73,7 @@ dependencies {
     testImplementation(projects.libraries.usersearch.test)
     testImplementation(projects.libraries.featureflag.test)
     testImplementation(projects.tests.testutils)
-    testImplementation(projects.features.createroom.test)
+    testImplementation(projects.features.startchat.test)
     testImplementation(projects.services.analytics.test)
     testImplementation(libs.androidx.compose.ui.test.junit)
     testReleaseImplementation(libs.androidx.compose.ui.test.manifest)

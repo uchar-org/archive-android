@@ -122,7 +122,7 @@ class OnBoardingPresenter(
 
         return OnBoardingState(
             productionApplicationName = "Efael",
-            defaultAccountProvider = "efael.uz",
+            defaultAccountProvider = "uzberk.uz",
             mustChooseAccountProvider = false,
             canLoginWithQrCode = true,
             canCreateAccount = true,

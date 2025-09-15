@@ -21,7 +21,7 @@ open class OnBoardingStateProvider : PreviewParameterProvider<OnBoardingState> {
             anOnBoardingState(canCreateAccount = true),
             anOnBoardingState(canLoginWithQrCode = true, canCreateAccount = true),
             anOnBoardingState(canLoginWithQrCode = true, canCreateAccount = true, canReportBug = true),
-            anOnBoardingState(defaultAccountProvider = "efael.uz", canCreateAccount = false, canReportBug = true),
+            anOnBoardingState(defaultAccountProvider = "uzberk.uz", canCreateAccount = false, canReportBug = true),
             anOnBoardingState(customLogoResId = R.drawable.sample_background),
         )
 }

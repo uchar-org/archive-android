@@ -108,3 +108,7 @@ lint/tmp/
 .DS_Store
 
 checkouts/**
+
+# Keys
+keys
+

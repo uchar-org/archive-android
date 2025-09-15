@@ -29,15 +29,15 @@ android {
     defaultConfig {
         buildConfigFieldStr(
             name = "URL_COPYRIGHT",
-            value = BuildTimeConfig.URL_COPYRIGHT ?: "https://efael.uz/copyright",
+            value = BuildTimeConfig.URL_COPYRIGHT ?: "https://uzberk.uz/copyright",
         )
         buildConfigFieldStr(
             name = "URL_ACCEPTABLE_USE",
-            value = BuildTimeConfig.URL_ACCEPTABLE_USE ?: "https://efael.uz/acceptable-use-policy-terms",
+            value = BuildTimeConfig.URL_ACCEPTABLE_USE ?: "https://uzberk.uz/acceptable-use-policy-terms",
         )
         buildConfigFieldStr(
             name = "URL_PRIVACY",
-            value = BuildTimeConfig.URL_PRIVACY ?: "https://efael.uz/privacy",
+            value = BuildTimeConfig.URL_PRIVACY ?: "https://uzberk.uz/privacy",
         )
     }
 }

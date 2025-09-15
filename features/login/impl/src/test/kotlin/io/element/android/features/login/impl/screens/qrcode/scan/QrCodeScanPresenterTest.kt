@@ -85,7 +85,7 @@ class QrCodeScanPresenterTest {
             qrCodeLoginDataFactory = qrCodeLoginDataFactory,
             enterpriseService = FakeEnterpriseService(
                 isAllowedToConnectToHomeserverResult = { false },
-                defaultHomeserverListResult = { listOf("efael.uz") },
+                defaultHomeserverListResult = { listOf("uzberk.uz") },
             )
         )
         presenter.test {
